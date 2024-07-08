@@ -7,11 +7,13 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+@Component
 public class TokenService {
     @Value("${api.security.secret}")
     private String apiSecret;
@@ -31,25 +33,27 @@ public class TokenService {
     }
 
     public String getSubject(String token) {
-        if (token == null) {
-            throw new RuntimeException();
-        }
-        DecodedJWT verifier = null;
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(apiSecret); // validando firma
-            verifier = JWT.require(algorithm)
-                    .withIssuer("ForoHub")
-                    .build()
-                    .verify(token);
-            verifier.getSubject();
-        } catch (JWTVerificationException exception) {
-            System.out.println(exception.toString());
-        }
-        if (verifier.getSubject() == null) {
-            throw new RuntimeException("Verifier invalido");
-        }
-        return verifier.getSubject();
+    if (token == null) {
+        throw new RuntimeException("Token nulo");
     }
+    try {
+        Algorithm algorithm = Algorithm.HMAC256(apiSecret); // Validando firma
+        DecodedJWT verifier = JWT.require(algorithm)
+                .withIssuer("ForoHub")
+                .build()
+                .verify(token);
+
+        // Verificar si el subject es válido
+        String subject = verifier.getSubject();
+        if (subject == null) {
+            throw new RuntimeException("Subject inválido en el token");
+        }
+        return subject;
+    } catch (JWTVerificationException exception) {
+        throw new RuntimeException("Error al verificar el token: " + exception.getMessage());
+    }
+}
+
 
     private Instant generarFechaExpiracion() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-05:00"));

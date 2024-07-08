@@ -27,7 +27,33 @@ public class Usuario implements UserDetails {
     private String email;
     private String contrasena;
     private Integer perfiles;
+    private Boolean activo;
 
+
+    public Usuario(DatosRegistroUsuario datos) {
+        this.activo = true;
+        this.nombre = datos.nombre();
+        this.email = datos.email();
+        this.contrasena = datos.contrasena();
+        this.perfiles = datos.perfiles();
+    }
+
+    public void actualizarInformacion(DatosActualizacionUsuario datos) {
+        if (datos.nombre() != null) {
+            this.nombre = datos.nombre();
+        }
+        if (datos.contrasena() != null) {
+            this.contrasena = datos.contrasena();
+        }
+        if (datos.perfiles() != null) {
+            this.perfiles = datos.perfiles();
+        }
+
+    }
+
+    public void eliminar() {
+        this.activo = false;
+    }
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
@@ -61,4 +87,5 @@ public class Usuario implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }
